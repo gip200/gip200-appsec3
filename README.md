@@ -33,16 +33,13 @@ For tasks involving source code or exploit code, include the important code snip
 
 Your repository should now include the following file structure:
 
-    - .github/
-        - workflows/
-          - <NetID>-regression.yml
     - GiftCardSite/
         - ...
     - Report/
         - Artifacts/
             - <NetID>-screenshot1.jpg
             - <NetID>-screenshot2.jpg
-        - <NetID>-AppSec-Lab2.md
+        - <NetID>-AppSec-Lab3.md
 
 
 ## Frequently Asked Questions
@@ -172,7 +169,7 @@ modifications to the application and configurations in order to implement each
 control is critical for maintainability of the application and is requried for
 full credit.
 
-### Task 1) Validate findings (1 pt each)
+###  Sub Task A) Validate findings (1 pt each)
 
 The security team has done their best to review the application and provide guidance
 on how to meet the security controls. They do not have a comprehensive knowledge of
@@ -181,7 +178,7 @@ use the audit guide in the [`Benchmarks`](https://github.com/NYUJRA/AppSec3/tree
 directory to validate the findings of the security team. Take a screenshot of the
 result and document the steps you took
 
-### Task 2) Remediate (1 pt each)
+### Sub Task B) Remediate (1 pt each)
 
 The security team gave remediation guidance for each failing control. Its your job
 to implement the remediation. This will requrie you to understand the controls 
@@ -189,7 +186,7 @@ intention as well as the technology used to implement the control. Document the
 steps you took to implement the control. Use ```git``` to ensure that the changes you
 make to any files are reflected in you repository
 
-### Task 3) Verify finding resolution (1 pt each)
+### Sub Task C) Verify finding resolution (1 pt each)
 
 After each remediation, rebuild the affected container or reapply the affected
 kubernetes configuration and verify that the control is now passing per the audit
