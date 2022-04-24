@@ -47,7 +47,7 @@ We wil need to modify the PSP by setting the
 
     privileged: true -> privileged: false
 
-![Image](https://github.com/gip200/gip200-appsec2/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+![image](https://github.com/gip200/gip200-appsec2/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
 
 
 C) Verify finding resolution
