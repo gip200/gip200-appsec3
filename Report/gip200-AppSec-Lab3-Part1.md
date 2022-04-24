@@ -35,7 +35,7 @@ As per the CIS_Kubernetes_V1.20_Benchmark_v1.0.0_PDF, we check using
 
 This returns **unrestricted true** which means it permits privileged containers.
 
-![Image](https://github.com/gip200/gip200-appsec2/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
 
 B) Remediate
 
