@@ -44,12 +44,6 @@ spec:
                     name: admin-login-secrets
                     key: password
 
-            - name: SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                    name: secret-key
-                    key: secret-key
-
           volumeMounts:
             - name: mysql-volume-mount
               mountPath: /var/lib/busybox
