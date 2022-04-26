@@ -1,5 +1,4 @@
 
-
   
 
 # George Papadopoulos - gip200@nyu.edu
@@ -25,7 +24,7 @@ The security team gave remediation guidance for each failing control. Its your j
 After each remediation, rebuild the affected container or reapply the affected kubernetes configuration and verify that the control is now passing per the audit guide. Take a screenshot of the result and document as necessary.
 
 
-***Control # 5.2.1 - Minimize the admission of privileged containers***
+***Kubenetes Control # 5.2.1 - Minimize the admission of privileged containers***
 
 A) Validate findings
 
@@ -59,7 +58,7 @@ After modifying the configuration, we can review and see that the PSP shows ther
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
 
 
-***Control # 5.2.2 - Minimize the admission of containers wishing to share the host process ID namespace***
+***Kubenetes Control # 5.2.2 - Minimize the admission of containers wishing to share the host process ID namespace***
 
 A) Validate findings
 
@@ -88,7 +87,7 @@ After changing hostPID configuration, if we run previous commands, we see that t
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.2c.jpg?raw=true)
 
-***Control # 5.2.3 - Minimize the admission of containers wishing to share the host IPC namespace***
+***Kubenetes Control # 5.2.3 - Minimize the admission of containers wishing to share the host IPC namespace***
 
 A) Validate findings
 
@@ -114,7 +113,7 @@ After  hostIPC config change, we can run previous command and see that the PSP d
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.3c.jpg?raw=true)
 
 
-***Control # 5.2.4 - Minimize the admission of containers wishing to share the host network namespace***
+***Kubenetes Control # 5.2.4 - Minimize the admission of containers wishing to share the host network namespace***
 
 A) Validate findings
 
@@ -140,7 +139,7 @@ After hostNetwork config change, we can run previous command and see that the PS
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.4c.jpg?raw=true)
 
-***Control # 5.2.5 - Minimize the admission of containers with allowPrivilegeEscalation***
+***Kubenetes Control # 5.2.5 - Minimize the admission of containers with allowPrivilegeEscalation***
 
 A) Validate findings
 As per the CIS_Kubernetes_V1.20_Benchmark_v1.0.0_PDF, we check using
@@ -168,7 +167,7 @@ After allowPrivilegeEscalation config change, we can run previous command and se
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.5c.jpg?raw=true)
 
 
- ***Control # 5.2.6 - Minimize the admission of root containers***
+ ***Kubenetes Control # 5.2.6 - Minimize the admission of root containers***
 
 A) Validate findings
 
@@ -196,7 +195,7 @@ After runAsUser config change, we can run previous command and see that the PSP 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.6c.jpg?raw=true)
 
 
-***Control # 5.2.7 - Minimize the admission of containers with the NET_RAW capability***
+***Kubenetes Control # 5.2.7 - Minimize the admission of containers with the NET_RAW capability***
 
 A) Validate findings
 
@@ -231,7 +230,7 @@ After runAsUser config change, we can run previous command and see that the PSP 
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.7c.jpg?raw=true)
 
-***Control # 5.4.1 - Prefer using secrets as files over secrets as environment variables***	
+***Kubenetes Control # 5.4.1 - Prefer using secrets as files over secrets as environment variables***	
 
 
 nyuappsec@ubuntu:~/Appsec3$ kubectl get all -o jsonpath='{range .items[?(@..secretKeyRef)]} {.kind} {.metadata.name} {"\n"}{end}' -A
@@ -295,8 +294,6 @@ Now we comment out SECRET_KEY in settings.py and restarti minicube allows the ch
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.4.1b.jpg?raw=true)
 
 
-
-
 C) Verify finding resolution
 
 From kubectl get pod, name of pod, as it has changed, and once again check the env, as above. You should discover the SECRET_KEY is in the env, even though you commented/removed in the settings.py file. 
@@ -309,16 +306,245 @@ Further, we can confirm the website still works, but you will need to update the
 
 
 
+**Kubenetes Control # 5.7.1 - Create administrative boundaries between resources using namespaces**
+
+A) Validate findings
+
+We confirm there are no working namespaces other than "default" and some administrative ones "kube-". We do this by running the following command. All pods fall into default.
+
+
+    kubectl get namespaces
 
 
 
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.7.1a.jpg?raw=true)
+
+B) Remediate
+We begin by implementing namespace "lab3space" 
+
+    # lab3space.json file
+    lab3space.yaml 
+    apiVersion: v1
+    kind: Namespace
+    metadata:
+     name: lab3space
 
 
+ we then run kubectl create -f lab3space.yaml. We may choose to do this at minikube start for consistency.
+
+   
+We can confirm the establishment of the namespace. We then update each of the kubernetes yaml files, for example, on k8/proxy-deploy.yaml, we add the line 'namespace: lab3space'. We do this for all 3 pods (Giftcardsite/k8, proxy/k8 and db/k8)
+
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: proxy
+      namespace: lab3space
+      .
+      .
+
+We then must delete the deployed pods and redeploy them in the namespace as per the config and requirement and then redeploy the docker deploys, which will this time account for the changes in the yaml to set namespaces.
+
+    minikube delete 
+    docker image prune
+    docker build -t nyuappsec/assign3:v0 .
+    docker build -t nyuappsec/assign3-proxy:v0 proxy/
+    docker build -t nyuappsec/assign3-db:v0 db/
+
+After rebuilding, we make sure to create the namespace at startup and as such the pods will start in the correct namespace (in my case lab3space).
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.7.1b.jpg?raw=true)
 
 
+C) Verify finding resolution
 
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.7.1c.jpg?raw=true)
+
+
+**Kubenetes Control # 5.7.2 - Ensure that the seccomp profile is set to docker/default in your pod definitions**
+
+A) Validate findings
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+
+B) Remediate
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+
+
+C) Verify finding resolution
+
+We confirm with "kubectl get namespaces" there is now an additional namespace called "lab3space" and that services and pods are now in that namespace. We need to use new additional command arguments in the form below to now reference pods. 
+
+    kubectl get namespaces
+    kubectl get pods -n lab3space 
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+
+**Docker Control # 4.1 - Ensure that a user for the container has been created**
+
+A) Validate findings
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+
+B) Remediate
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+
+
+C) Verify finding resolution
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+
+
+**Docker Control # 4.2 - Ensure that containers use only trusted base images**
+
+A) Validate findings
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+
+B) Remediate
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+
+
+C) Verify finding resolution
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+
+
+**Docker Control # 4.3 - Ensure that unnecessary packages are not installed in the container**
+
+A) Validate findings
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+
+B) Remediate
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+
+
+C) Verify finding resolution
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+
+
+**Docker Control # 4.9 - Ensure that COPY is used instead of ADD in Dockerfiles**
+
+A) Validate findings
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+
+B) Remediate
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+
+
+C) Verify finding resolution
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+
+
+**Docker Control # 4.10 - Ensure secrets are not stored in Dockerfiles**
+
+A) Validate findings
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+
+B) Remediate
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+
+
+C) Verify finding resolution
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+
+
+**Oracle MySQL 8.0 Control # 1.2 - Use Dedicated Least Privileged Account for MySQL Daemon/Service**
+
+A) Validate findings
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+
+B) Remediate
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+
+
+C) Verify finding resolution
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+
+
+**Oracle MySQL 8.0 Control # 2.3 - Dedicate the Machine Running MySQL**
+
+A) Validate findings
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+
+B) Remediate
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+
+
+C) Verify finding resolution
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+
+
+**Oracle MySQL 8.0 Control # 2.7 - Ensure ‘password_lifetime’ is Less Than or Equal to ‘365’**
+
+A) Validate findings
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+
+B) Remediate
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+
+
+C) Verify finding resolution
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+
+
+**Oracle MySQL 8.0 Control # 2.9 - Ensure Password Resets Require Strong Passwords**
+
+A) Validate findings
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+
+B) Remediate
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+
+
+C) Verify finding resolution
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+
+
+**Oracle MySQL 8.0 Control # 4.2 - Ensure Example or Test Databases are Not Installed on Production Servers**
+
+
+A) Validate findings
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+
+B) Remediate
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+
+
+C) Verify finding resolution
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
 
 ## END OF LAB 3, Part 1 SUBMISSION
+
+
+
 
 
 

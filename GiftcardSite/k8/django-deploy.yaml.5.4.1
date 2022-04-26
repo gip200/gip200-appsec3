@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: assignment3-django-deploy
+  namespace: lab3space
   labels:
     app: assignment3-django-deploy
 spec:
@@ -43,6 +44,12 @@ spec:
                 secretKeyRef:
                     name: admin-login-secrets
                     key: password
+
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                    name: secret-key
+                    key: secret-key
 
           volumeMounts:
             - name: mysql-volume-mount
