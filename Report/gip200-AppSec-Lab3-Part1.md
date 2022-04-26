@@ -358,6 +358,11 @@ After rebuilding, we make sure to create the namespace at startup and as such th
 
 C) Verify finding resolution
 
+We confirm with "kubectl get namespaces" there is now an additional namespace called "lab3space" and that services and pods are now in that namespace. We need to use new additional command arguments in the form below to now reference pods. 
+
+    kubectl get namespaces
+    kubectl get pods -n lab3space 
+    
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.7.1c.jpg?raw=true)
 
 
@@ -365,21 +370,41 @@ C) Verify finding resolution
 
 A) Validate findings
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+By default, seccomp profile is set to unconfined which means that no seccomp profiles are  
+enabled. We check the pod definition files to look for the following to discover it is NOT in any of the pod definition files.
+
+    securityContext:  
+	    seccompProfile:  
+		    type: RuntimeDefault
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.7.2a.jpg?raw=true)
 
 B) Remediate
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+To each deployment file (db, Giftcardsite and proxy yaml deployment files we add the above text, in the containers/name area, as shown.
+
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.7.2b.jpg?raw=true)
 
 
 C) Verify finding resolution
 
-We confirm with "kubectl get namespaces" there is now an additional namespace called "lab3space" and that services and pods are now in that namespace. We need to use new additional command arguments in the form below to now reference pods. 
+We can validate the application of seccomp inside the actual pod. We can get an interactive shell by giving the following commands, which then allows us to interrogate the seccomp state of the system.
 
-    kubectl get namespaces
-    kubectl get pods -n lab3space 
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+    kubectl exec -it proxy-85f5bfff6b-chm56 /bin/sh
+    *kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.*
+    
+    / # 
+    / # 
+    / # grep Seccomp /proc/1/status
+    Seccomp:	2
+    Seccomp_filters:	1
+    / # 
+
+As we can see, we see that the Seccomp filter is on inside the docker. If you explicitly tell docker to run without Seccomp profile, you get 0.
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.7.2c.jpg?raw=true)
 
 **Docker Control # 4.1 - Ensure that a user for the container has been created**
 
@@ -542,6 +567,7 @@ C) Verify finding resolution
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
 
 ## END OF LAB 3, Part 1 SUBMISSION
+
 
 
 

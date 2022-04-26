@@ -17,9 +17,6 @@ spec:
       containers:
         - name: mysql-container
           image: nyuappsec/assign3-db:v0
-          securityContext:
-            seccompProfile:
-              type: RuntimeDefault
           env:
             - name: MYSQL_ROOT_PASSWORD
               value: thisisatestthing.

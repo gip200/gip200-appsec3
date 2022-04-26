@@ -18,9 +18,6 @@ spec:
       containers:
         - name: proxy
           image: nyuappsec/assign3-proxy:v0
-          securityContext:
-            seccompProfile:
-              type: RuntimeDefault
           ports:
             - containerPort: 8080
           volumeMounts:

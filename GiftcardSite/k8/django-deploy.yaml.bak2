@@ -17,9 +17,6 @@ spec:
       containers:
         - name: assignment3-django-deploy
           image: nyuappsec/assign3:v0
-          securityContext:
-            seccompProfile:
-              type: RuntimeDefault
           ports:
             - containerPort: 8000
           env:
