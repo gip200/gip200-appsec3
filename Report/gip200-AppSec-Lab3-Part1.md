@@ -23,7 +23,7 @@ The security team gave remediation guidance for each failing control. Its your j
 
 After each remediation, rebuild the affected container or reapply the affected kubernetes configuration and verify that the control is now passing per the audit guide. Take a screenshot of the result and document as necessary.
 
-
+---
 ***Kubenetes Control # 5.2.1 - Minimize the admission of privileged containers***
 
 A) Validate findings
@@ -57,6 +57,7 @@ After modifying the configuration, we can review and see that the PSP shows ther
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
 
+---
 
 ***Kubenetes Control # 5.2.2 - Minimize the admission of containers wishing to share the host process ID namespace***
 
@@ -86,6 +87,7 @@ C) Verify finding resolution
 After changing hostPID configuration, if we run previous commands, we see that the PSP no longer returns true . This means we no longer permit sharing the host process ID namespace.
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.2c.jpg?raw=true)
+---
 
 ***Kubenetes Control # 5.2.3 - Minimize the admission of containers wishing to share the host IPC namespace***
 
@@ -112,6 +114,7 @@ C) Verify finding resolution
 After  hostIPC config change, we can run previous command and see that the PSP does not return true any longer for permit sharing of host IPC namespace.
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.3c.jpg?raw=true)
 
+---
 
 ***Kubenetes Control # 5.2.4 - Minimize the admission of containers wishing to share the host network namespace***
 
@@ -139,6 +142,7 @@ After hostNetwork config change, we can run previous command and see that the PS
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.4c.jpg?raw=true)
 
+---
 ***Kubenetes Control # 5.2.5 - Minimize the admission of containers with allowPrivilegeEscalation***
 
 A) Validate findings
@@ -167,6 +171,7 @@ After allowPrivilegeEscalation config change, we can run previous command and se
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.5c.jpg?raw=true)
 
 
+---
  ***Kubenetes Control # 5.2.6 - Minimize the admission of root containers***
 
 A) Validate findings
@@ -195,6 +200,7 @@ After runAsUser config change, we can run previous command and see that the PSP 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.6c.jpg?raw=true)
 
 
+---
 ***Kubenetes Control # 5.2.7 - Minimize the admission of containers with the NET_RAW capability***
 
 A) Validate findings
@@ -230,6 +236,7 @@ After runAsUser config change, we can run previous command and see that the PSP 
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.7c.jpg?raw=true)
 
+---
 ***Kubenetes Control # 5.4.1 - Prefer using secrets as files over secrets as environment variables***	
 
 
@@ -306,6 +313,7 @@ Further, we can confirm the website still works, but you will need to update the
 
 
 
+---
 **Kubenetes Control # 5.7.1 - Create administrative boundaries between resources using namespaces**
 
 A) Validate findings
@@ -366,6 +374,7 @@ We confirm with "kubectl get namespaces" there is now an additional namespace ca
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.7.1c.jpg?raw=true)
 
 
+---
 **Kubenetes Control # 5.7.2 - Ensure that the seccomp profile is set to docker/default in your pod definitions**
 
 A) Validate findings
@@ -411,6 +420,7 @@ As we can see, we see that the Seccomp filter is on inside the docker. If you ex
 
 
 
+---
 **Docker Control # 4.1 - Ensure that a user for the container has been created**
 
 A) Validate findings
@@ -467,70 +477,163 @@ This time we see the pod is running as django-user
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.1c.jpg?raw=true)
 
 
+---
 **Docker Control # 4.2 - Ensure that containers use only trusted base images**
 
 A) Validate findings
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+We can review the existance of docker images by running the following commands to list the images and interrogate them. We find a number of images that are consistent with either standard images
 
-B) Remediate
+    docker images
+    
+    docker history <imageName/ID>
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.2a.jpg?raw=true)
+
+B) Remediate & C) Verify finding resolution
+
+No remediation is necessary here as we are simply reviewing the images. In a real organization, we would have been periodically reviewing Docker images to confirm that these images are safe and do not  contain security vulnerabilities or malicious code. These images  
+should be reviewed in line with organizational security policy.
+
+---
 
 
-C) Verify finding resolution
-
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
 
 
 **Docker Control # 4.3 - Ensure that unnecessary packages are not installed in the container**
 
 A) Validate findings
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+First we list running instances of containers and their installed packages by executing the commands below:  
 
-B) Remediate
-
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
-
-
-C) Verify finding resolution
-
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+    docker ps --quiet  
+    docker exec $INSTANCE_ID rpm -qa  
+    # in our case, the ubuntu based packaging can be listed like so in minikube:
+    docker exec -i <container_id_1>  dpkg -l
 
 
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.3a.jpg?raw=true)
+
+
+B) Remediate & C) Verify finding resolution
+
+No remediation is necessary here as we are simply reviewing the packages. In a real organization, we would have been periodically reviewing packages to confirm that these images are safe and do not  contain security vulnerabilities or malicious code, and further, that no additional packages are loaded that may not be needed and may be used for exploit. These packages should be reviewed in line with organizational security policy.
+
+---
 **Docker Control # 4.9 - Ensure that COPY is used instead of ADD in Dockerfiles**
 
 A) Validate findings
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+We can review the existance of COPY/ADD use in docker images by running the following commands to list the images and interrogate them. We find a number of images that are consistent with either standard images
+
+    docker images
+    docker history <imageName/ID>
+
+Alternatively, given our small setup, we can interrogate our individual Dockerfile configs to see if ADD is used and look to correct. You could script a scrub of this sort for all Dockerfiles:
+
+    more ./Dockerfile | grep ADD
+    more proxy/Dockerfile | grep ADD
+    more db/Dockerfile | grep ADD
+
+	
+
+In fact, we do find that the image for the db, has at least 3 instances of ADD. 
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.9a.jpg?raw=true)
 
 B) Remediate
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+The correction for this is to replace all ADD instructions with copy, in the db/Dockerfile. 
+
+We can then rebuild the image accordingly
+
+COPY should be used rather than ADD instructions in Dockerfiles.
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.9b.jpg?raw=true)
 
 
 C) Verify finding resolution
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+Using our methodology, we can see there are no active ADD commands in the dockerfiles (in our case, they were commented and replaced by COPY commands).
 
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.9c.jpg?raw=true)
 
+---
 **Docker Control # 4.10 - Ensure secrets are not stored in Dockerfiles**
+
 
 A) Validate findings
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+Similar to previous 4.9, we can review the existance of secrets use in dockerfiles by running the following commands to list the images and interrogate them. We find a number of images that are consistent with either standard images
+
+    docker images
+    docker history <imageName/ID>
+
+Alternatively, given our small setup, we can interrogate our individual Dockerfile configs to see if some common style of secrets is maintained in the dockerfiles and look to correct. You could script a scrub of this sort for all Dockerfiles:
+
+    more ./Dockerfile | grep secret
+    more proxy/Dockerfile | grep ADD
+    more db/Dockerfile | grep ADD
+
+Again, we do find that the image for the db, has an exposed credential injected into the environment appearing in the open:
+
+    ENV MYSQL_ROOT_PASSWORD "thisisatestthing."
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.10a.jpg?raw=true)
 
 B) Remediate
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+The method to correct this is similar to the secrets in Kub 5.4.1, where we want secrets in files, rather than environmental variables, creating a file similar to django-admin-pass-secret.yaml to create a new file, such as
+
+Edit to reflect the new base64 encoded key, like so:
+
+    apiVersion: v1
+    kind: Secret
+    metadata:
+    name: secret-key
+    type: Opaque
+    data:
+    secret-key: a21neXNhI2Z6KzkoejEqPWMweWRyaml6ayo3c3RobTJnYTF6ND1eNjEK
+  
+Rebuild the kubernetes file and confirm the secret is in minikube
+
+    kubectl apply -f k8-secret-key.yaml
+    kubectl get secret
+    kubectl describe secret-key
+
+Add the following to ~/Appsec3/db/k8/db-deployment.yaml
+
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: k8-secret
+                  key: MYSQL_ROOT_PASSWORD
+
+Now we comment out PASSWORD in DB-DEPLOY and restart minicube allows the change to take place. We can then rebuild the image accordingly.
+
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.10b.jpg?raw=true)
 
 
 C) Verify finding resolution
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+Upon restarting our pods, we can open an interactive shell on the SQL pod. We see clearly that although we commented out the password in the Dockerfile, it is getting the secrets from the secrets keystore, the DB is able to start just fine and issuing and 'env' command clearly shows the password is in the environmental variable, but this time from yaml files.
 
+    nyuappsec@ubuntu:~/Appsec3$ kubectl get pods
+    NAME                                         READY   STATUS    RESTARTS   AGE
+    assignment3-django-deploy-57f56f9dc7-5p5gs   1/1     Running   0          5m58s
+    mysql-container-85f6b9d89b-ll74s             1/1     Running   0          5m59s
+    proxy-85f5bfff6b-6f6pm                       1/1     Running   0          5m57s
+    nyuappsec@ubuntu:~/Appsec3$ kubectl exec -it mysql-container-85f6b9d89b-ll74s /bin/sh
+    kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+    # 
+    # env | grep PASSWORD
+    MYSQL_ROOT_PASSWORD=thisisatestthing.
+    # 
 
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.10c.jpg?raw=true)
+
+---
 **Oracle MySQL 8.0 Control # 1.2 - Use Dedicated Least Privileged Account for MySQL Daemon/Service**
 
 A) Validate findings
@@ -546,7 +649,7 @@ C) Verify finding resolution
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
 
-
+---
 **Oracle MySQL 8.0 Control # 2.3 - Dedicate the Machine Running MySQL**
 
 A) Validate findings
@@ -562,7 +665,7 @@ C) Verify finding resolution
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
 
-
+---
 **Oracle MySQL 8.0 Control # 2.7 - Ensure ‘password_lifetime’ is Less Than or Equal to ‘365’**
 
 A) Validate findings
@@ -578,7 +681,7 @@ C) Verify finding resolution
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
 
-
+---
 **Oracle MySQL 8.0 Control # 2.9 - Ensure Password Resets Require Strong Passwords**
 
 A) Validate findings
@@ -594,7 +697,7 @@ C) Verify finding resolution
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
 
-
+---
 **Oracle MySQL 8.0 Control # 4.2 - Ensure Example or Test Databases are Not Installed on Production Servers**
 
 
@@ -612,6 +715,9 @@ C) Verify finding resolution
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
 
 ## END OF LAB 3, Part 1 SUBMISSION
+
+
+
 
 
 

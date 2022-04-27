@@ -22,12 +22,6 @@ spec:
             seccompProfile:
               type: RuntimeDefault
           env:
-            - name: MYSQL_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: k8-secret
-                  key: MYSQL_ROOT_PASSWORD
-
             - name: MYSQL_DATABASE
               value: GiftcardSiteDB
 
