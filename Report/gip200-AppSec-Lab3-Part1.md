@@ -638,83 +638,199 @@ Upon restarting our pods, we can open an interactive shell on the SQL pod. We se
 
 A) Validate findings
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
-
-B) Remediate
-
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+We want to establish what user is running the process the mysql and what permissions are available. We jump to the interactive shell on the pod and find that our typical UNIX "ps" is missing. So we must interrogate the matter differently. We do the following to find the process and then, what user owns the files. It is clear that based on the /proc filesystem, only the user mysql can be running this. Further, there is no sudo on the system.
 
 
-C) Verify finding resolution
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+    root@mysql-container-85f6b9d89b-ll74s:/# pidof mysqld | more
+    1
+    
+    root@mysql-container-85f6b9d89b-ll74s:/# ls -al /proc/ | head 
+    total 4
+    dr-xr-xr-x 434 root  root     0 Apr 27 02:24 .
+    drwxr-xr-x   1 root  root  4096 Apr 27 02:24 ..
+    dr-xr-xr-x   9 mysql mysql    0 Apr 27 02:24 1
+   
+    root@mysql-container-85f6b9d89b-ll74s:/# tail /etc/passwd
+    mysql:x:999:999::/home/mysql:/bin/sh
+
+
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-1.2a.jpg?raw=true)
+
+B) Remediate & C) Verify finding resolution
+
+So while this is good, we do notice the user does allow interactive shell login, which would be good to remediate. As the user is established in the build, to fix this is quite involved and would require reimaging the docker image to perhaps alter the /etc/password to reflect a shell of /usr/sbin/nologin
+
+    mysql:x:999:999::/home/mysql:/bin/sh
+    #change to
+    mysql:x:999:999::/home/mysql:/usr/sbin/nologin
 
 ---
 **Oracle MySQL 8.0 Control # 2.3 - Dedicate the Machine Running MySQL**
 
 A) Validate findings
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+We can presume based upon how the machine is named and the construct of our pods, that a container is dedicated for MySQL, however we need to look a little closer.  As per the previous problem, we can check that the user is running is mysql, the 'env' environment is also consistent with a database server.
 
-B) Remediate
+    root@mysql-container-85f6b9d89b-ll74s:/# env | grep SQL
+    MYSQL_MAJOR=8.0
+    MYSQL_SERVICE_PORT_3306_TCP_ADDR=10.97.205.190
+    MYSQL_ROOT_PASSWORD=thisisatestthing.
+    MYSQL_SERVICE_SERVICE_HOST=10.97.205.190
+    MYSQL_VERSION=8.0.28-1debian10
+    MYSQL_SERVICE_PORT=tcp://10.97.205.190:3306
+    MYSQL_DATABASE=GiftcardSiteDB
+    MYSQL_SERVICE_PORT_3306_TCP=tcp://10.97.205.190:3306
+    MYSQL_SERVICE_PORT_3306_TCP_PORT=3306
+    MYSQL_SERVICE_SERVICE_PORT=3306
+    MYSQL_SERVICE_PORT_3306_TCP_PROTO=tcp
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
 
+B) Remediate & C) Verify finding resolution
 
-C) Verify finding resolution
+Looking at ls -l /proc, we see mostly well know services that are standard as part of a typical build. We do, however, see a couple of, for whatever reason renamed processes that are showing up as only PID numbers.
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+    root@mysql-container-85f6b9d89b-ll74s:/# ls -al /proc/
+    total 4
+    dr-xr-xr-x 435 root  root     0 Apr 27 02:24 .
+    drwxr-xr-x   1 root  root  4096 Apr 27 02:24 ..
+    dr-xr-xr-x   9 mysql mysql    0 Apr 27 02:24 1
+    dr-xr-xr-x   9 root  root     0 Apr 27 12:33 126
+    dr-xr-xr-x   9 root  root     0 Apr 27 14:53 180
+
+We know from previous benchmark that 1 is clearly mysqld. For 126 and 180, we are a little unsure. In a real production system, you might know what these are or have access to 'ps' or other tools to do the audit to completely know what these processes are.
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-2.3b.jpg?raw=true)
+
 
 ---
 **Oracle MySQL 8.0 Control # 2.7 - Ensure ‘password_lifetime’ is Less Than or Equal to ‘365’**
 
 A) Validate findings
+To validate this, we need to connect to the DB, either internally (localhost) or from the django server by IP. Internally, it would look like this.
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+    root@mysql-container-85f6b9d89b-ll74s:/# mysql --host=localhost --user=root --password=thisisatestthing.
+    mysql: [Warning] Using a password on the command line interface can be insecure.
+    Welcome to the MySQL monitor.  Commands end with ; or \g.
+    Your MySQL connection id is 8
+    Server version: 8.0.28 MySQL Community Server - GPL
+    
+    mysql> SELECT VARIABLE_NAME, VARIABLE_VALUE FROM performance_schema.global_variables where VARIABLE_NAME like 'default_password_lifetime';
+    +---------------------------+----------------+
+    | VARIABLE_NAME             | VARIABLE_VALUE |
+    +---------------------------+----------------+
+    | default_password_lifetime | 0              |
+    +---------------------------+----------------+
+    1 row in set (5.01 sec)
 
-B) Remediate
-
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+We can see a password of 0 means no expiry, which may not be ideal (That said, expiring passwords of this form on real prod systems could be a serious problem causing random failures.
 
 
-C) Verify finding resolution
+B) Remediate & C) Verify finding resolution
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+We issue the command `set persist default_password_lifetime = 365;` to the MySQL Monitor. Rechecking with the previous command shows us we now have adjusted password expiry to be more finite (1 year).
+
+    mysql> set persist default_password_lifetime = 365;
+    Query OK, 0 rows affected (0.96 sec)
+     
+    mysql> SELECT VARIABLE_NAME, VARIABLE_VALUE FROM performance_schema.global_variables where VARIABLE_NAME like 'default_password_lifetime';
+    +---------------------------+----------------+
+    | VARIABLE_NAME             | VARIABLE_VALUE |
+    +---------------------------+----------------+
+    | default_password_lifetime | 365            |
+    +---------------------------+----------------+
+    1 row in set (0.00 sec)
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-2.7b.jpg?raw=true)
+
+
+
 
 ---
 **Oracle MySQL 8.0 Control # 2.9 - Ensure Password Resets Require Strong Passwords**
 
+
 A) Validate findings
+To validate this, we need to connect to the DB, either internally (localhost) or from the django server by IP. Internally, it would look like this.
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+        root@mysql-container-85f6b9d89b-ll74s:/# mysql --host=localhost --user=root --password=thisisatestthing.
+        mysql: [Warning] Using a password on the command line interface can be insecure.
+        Welcome to the MySQL monitor.  Commands end with ; or \g.
+        Your MySQL connection id is 8
+        Server version: 8.0.28 MySQL Community Server - GPL
+        
+        mysql> SELECT VARIABLE_NAME, VARIABLE_VALUE FROM performance_schema.global_variables where VARIABLE_NAME in ('password_history', 'password_reuse_interval');
+    +-------------------------+----------------+
+    | VARIABLE_NAME           | VARIABLE_VALUE |
+    +-------------------------+----------------+
+    | password_history        | 0              |
+    | password_reuse_interval | 0              |
+    +-------------------------+----------------+
+    2 rows in set (0.17 sec)
 
-B) Remediate
-
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
 
 
-C) Verify finding resolution
+We can see a password of 0 means no password history or reuse is enforced, and this may not be ideal (That said, this password enforcement without aux controls on real prod systems could be a serious problem causing random failures.
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+
+B) Remediate & C) Verify finding resolution
+
+We issue the command `mysql> SET PERSIST password_history = 5; mysql> SET PERSIST password_reuse_interval = 365;` to the MySQL Monitor. Rechecking with the previous command shows us we now have adjusted password reuse and history.
+
+    mysql> SET PERSIST password_history = 5;
+    Query OK, 0 rows affected (0.00 sec)
+    
+    mysql> SET PERSIST password_reuse_interval = 365;
+    Query OK, 0 rows affected (0.00 sec)
+    
+    mysql> SELECT VARIABLE_NAME, VARIABLE_VALUE FROM performance_schema.global_variables where VARIABLE_NAME in ('password_history', 'password_reuse_interval');
+    +-------------------------+----------------+
+    | VARIABLE_NAME           | VARIABLE_VALUE |
+    +-------------------------+----------------+
+    | password_history        | 5              |
+    | password_reuse_interval | 365            |
+    +-------------------------+----------------+
+    2 rows in set (0.01 sec)
+
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-2.9b.jpg?raw=true)
+
+
 
 ---
 **Oracle MySQL 8.0 Control # 4.2 - Ensure Example or Test Databases are Not Installed on Production Servers**
 
 
+
 A) Validate findings
+To validate this, we need to connect to the DB, either internally (localhost) or from the django server by IP. Internally, it would look like this.
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+        root@mysql-container-85f6b9d89b-ll74s:/# mysql --host=localhost --user=root --password=thisisatestthing.
+        
+    mysql> SELECT * FROM information_schema.SCHEMATA where SCHEMA_NAME not in ('mysql','information_schema', 'sys', 'performance_schema');
+    +--------------+----------------+----------------------------+------------------------+----------+--------------------+
+    | CATALOG_NAME | SCHEMA_NAME    | DEFAULT_CHARACTER_SET_NAME | DEFAULT_COLLATION_NAME | SQL_PATH | DEFAULT_ENCRYPTION |
+    +--------------+----------------+----------------------------+------------------------+----------+--------------------+
+    | def          | GiftcardSiteDB | utf8mb4                    | utf8mb4_0900_ai_ci     |     NULL | NO                 |
+    +--------------+----------------+----------------------------+------------------------+----------+--------------------+
+    1 row in set (2.62 sec) 
 
-B) Remediate
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+B) Remediate & C) Verify finding resolution
+
+In our case, we see only one single DB instance, which is consistent. If there were inappropriate databases, we could drop them issue the following SQL statement to drop an example database:  
+
+`DROP DATABASE <database name>;`
 
 
-C) Verify finding resolution
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.2b.jpg?raw=true)
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+---
 
 ## END OF LAB 3, Part 1 SUBMISSION
+
+
 
 
 
