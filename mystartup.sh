@@ -1,5 +1,6 @@
 minikube stop
-minikube start --namespace lab3space
+minikube start
+#minikube start --namespace lab3space
 
 eval $(minikube docker-env)
 

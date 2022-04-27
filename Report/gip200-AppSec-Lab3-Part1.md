@@ -406,20 +406,65 @@ As we can see, we see that the Seccomp filter is on inside the docker. If you ex
 
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.7.2c.jpg?raw=true)
 
+
+
+
+
+
 **Docker Control # 4.1 - Ensure that a user for the container has been created**
 
 A) Validate findings
+To validate this matter, we need to check docker containers as per the following to see what containers start as 0, indicating root.
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1a.jpg?raw=true)
+    docker ps --quiet | xargs --max-args=1 -I{} docker exec {} cat /proc/1/status | grep '^Uid:' | awk '{print $3}'
+    # once logged in
+    id
+
+
+A cursory check with this command shows 3 of 4 running as 0.
+
+We also can log in locally into the containers to show they are running processes as root, as well as their Dockerfiles
+
+    kubectl exec -it proxy-85f5bfff6b-q9p42 /bin/sh
+
+We note that in the proxy host, there is a user configured in the Dockerfile, but not applied. In the Django host, there is neither a user configured, nor is there a USER applied.
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.1a.jpg?raw=true)
 
 B) Remediate
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1b.jpg?raw=true)
+To remediate, in the django host, we must add the following to the Dockerfile:
+
+    RUN adduser -D django-app
+    RUN chown -R django-app:django-app /vol
+    RUN chmod -R 755 /vol/web
+    RUN chown -R django-app:django-app /GiftcardSite
+    USER django-app
+
+To remediate, in the proxy host, we only must add the following to the Dockerfile, as the user is established:
+
+    USER nginx
+
+We can then rebuild the docker containers as necessary to apply:
+```
+docker build -t nyuappsec/assign3:v0 .
+docker build -t nyuappsec/assign3-proxy:v0 proxy/
+```
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.1b.jpg?raw=true)
 
 
 C) Verify finding resolution
 
-![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
+We can validate again within the docker instance itself that it is running the process as the console of the pod
+
+    docker ps --quiet | xargs --max-args=1 -I{} docker exec {} cat /proc/1/status | grep '^Uid:' | awk '{print $3}'
+    # once logged in
+    id
+
+This time we see the pod is running as django-user
+
+![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-4.1c.jpg?raw=true)
 
 
 **Docker Control # 4.2 - Ensure that containers use only trusted base images**
@@ -567,6 +612,8 @@ C) Verify finding resolution
 ![image](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-5.2.1c.jpg?raw=true)
 
 ## END OF LAB 3, Part 1 SUBMISSION
+
+
 
 
 
