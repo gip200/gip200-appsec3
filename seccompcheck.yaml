@@ -1,0 +1,24 @@
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: seccomp
+  namespace: lab3space
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: assignment3-django-deploy
+              image: nyuappsec/assign3:v0
+              imagePullPolicy: IfNotPresent
+              command:
+              - /bin/sh
+              - -c
+              - date; echo "Hello from the Kubernetes cluster"; grep Seccomp /proc/1/status;
+              - pwd; ls; echo "after check";
+              - sleep 60;
+
+          restartPolicy: OnFailure

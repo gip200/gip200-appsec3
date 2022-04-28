@@ -828,7 +828,7 @@ In our case, we see only one single DB instance, which is consistent. If there w
 
 ---
 
-## END OF LAB 3, Part 1 SUBMISSION
+## END OF LAB 3, Part 1 SUBMISSION, ALL PARTS COMPLETED
 
 
 
