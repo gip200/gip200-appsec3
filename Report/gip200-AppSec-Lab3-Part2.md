@@ -52,7 +52,8 @@ Configuration - Cron/Job File -  seccompcheck.yaml
 
 Application Commands:
 
-    kubectl create -f seccompcheck.yaml
+>     kubectl create -f seccompcheck.yaml
+
      
     yuappsec@ubuntu:~/Appsec3$ kubectl get pods
     
@@ -104,54 +105,64 @@ Configuration - Cron/Job File -  seccompcheck.yaml
     apiVersion: batch/v1
     kind: CronJob
     metadata:
-      name: seccomp
-      namespace: lab3space
+      name: db-pwexpirycheck
     spec:
-      schedule: "*/1 * * * *"
+      schedule: "0/1 * * * *"
       jobTemplate:
         spec:
           template:
             spec:
               containers:
-                - name: assignment3-django-deploy
-                  image: nyuappsec/assign3:v0
-                  imagePullPolicy: IfNotPresent
-                  command:
-                  - /bin/sh
-                  - -c
-                  - date; echo "Hello from the Kubernetes cluster"; grep Seccomp /pr
-    oc/1/status;
-                  - pwd; ls; echo "after check";
-                  - sleep 60;
+              - name: mysql-container
+                image: nyuappsec/assign3-db:v0
+                env:
+                  - name: MYSQL_ROOT_PASSWORD
+                    value: thisisatestthing.
     
+                  - name: MYSQL_DB
+                    value: GiftcardSiteDB
+    
+                  - name: MYSQL_HOST
+                    value: mysql-service
+    
+                ports:
+                  - containerPort: 3306
+                imagePullPolicy: IfNotPresent
+                command:
+                - /bin/sh
+                - -c
+                - mysql -u root -p${MYSQL_ROOT_PASSWORD} -D${MYSQL_DB} -h${MYSQL_HOST} -e "SELECT VARIABLE_NAME, VARIABLE_VALUE FROM performance_schema.global_variables where VARIABLE_NAME like 'default_password_lifetime';"
               restartPolicy: OnFailure
+
 
 Application Commands:
 
-    kubectl create -f seccompcheck.yaml
-     
-    yuappsec@ubuntu:~/Appsec3$ kubectl get pods
-    
+>         kubectl create -f db-passwordcheck.yaml
+
+ 
+      nyuappsec@ubuntu:~/Appsec3$ kubectl get pods
     NAME                                         READY   STATUS      RESTARTS   AGE
-    assignment3-django-deploy-57f56f9dc7-5p5gs   1/1     Running     0          22h
-    mysql-container-85f6b9d89b-ll74s             1/1     Running     0          22h
-    proxy-85f5bfff6b-6f6pm                       1/1     Running     0          22h
-    seccomp-27518475-glvkm                       0/1     Completed   0          8s
+    assignment3-django-deploy-57f56f9dc7-5p5gs   1/1     Running     0          33h
+    db-pwexpirycheck-27519101-lgjtr              0/1     Completed   0          34s
+    mysql-container-85f6b9d89b-ll74s             1/1     Running     0          33h
+    proxy-85f5bfff6b-6f6pm                       1/1     Running     0          33h
     
-    nyuappsec@ubuntu:~/Appsec3$ kubectl logs seccomp-27518475-glvkm
-    Thu Apr 28 01:15:02 UTC 2022
-    Hello from the Kubernetes cluster
-    Seccomp:	0
-    Seccomp_filters:	0
+    nyuappsec@ubuntu:~/Appsec3$ kubectl logs db-pwexpirycheck-27519101-lgjtr
+    
+    mysql: [Warning] Using a password on the command line interface can be insecure.
+    VARIABLE_NAME	VARIABLE_VALUE
+    default_password_lifetime	365
+
+
 
 
 So we see here how we would be able to run a cron'd job in this case to check for seccomp compliance. In this particular case, perhaps the job could include the release of an email or some other strategic cron task to indicate the problem condition.
 
 
-`kubectl delete cronjob seccomp` deletes the job(s)
+`kubectl delete cronjob db-pwexpirycheck` deletes the job(s)
 
 
-![enter image description here](https://github.com/gip200/gip200-appsec1/blob/main/Reports/Artifacts/gip200-appsec3-p2.1a.jpg?raw=true)
+![enter image description here](https://github.com/gip200/gip200-appsec1/blob/main/Reports/Artifacts/gip200-appsec3-p2.2a.jpg?raw=true)
 
 
 ## END OF LAB 3, Part 2 SUBMISSION
