@@ -162,7 +162,7 @@ So we see here how we would be able to run a cron'd job in this case to check fo
 `kubectl delete cronjob db-pwexpirycheck` deletes the job(s)
 
 
-![enter image description here](https://github.com/gip200/gip200-appsec1/blob/main/Reports/Artifacts/gip200-appsec3-p2.2a.jpg?raw=true)
+![enter image description here](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-p2.2a.jpg?raw=true)
 
 
 ## END OF LAB 3, Part 2 SUBMISSION
