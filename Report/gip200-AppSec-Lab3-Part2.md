@@ -75,7 +75,7 @@ So we see here how we would be able to run a cron'd job in this case to check fo
 `kubectl delete cronjob seccomp` deletes the job(s)
 
 
-![enter image description here](https://github.com/gip200/gip200-appsec1/blob/main/Reports/Artifacts/gip200-appsec3-p2.1a.jpg?raw=true)
+![enter image description here](https://github.com/gip200/gip200-appsec3/blob/main/Report/Artifacts/gip200-appsec3-p2.1a.jpg?raw=true)
 
 
 **Task/Job 2 - MySQL Control # 2.7 - Ensure ‘password_lifetime’ is Less Than or Equal to ‘365’ (or just NOT equal to 0)**
